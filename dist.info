@@ -1,0 +1,16 @@
+--- This file is part of LuaDist project
+
+name = "ldoc"
+version = "1.0"
+
+desc = "LDoc - A Lua Documentation Tool"
+author = "Steve Donovan"
+maintainer = "Peter Kapec"
+url = "https://github.com/stevedonovan/ldoc"
+
+depends = {
+	"lua ~> 5.1",
+	"penlight >= 0.9.7",
+	"markdown >= 0.32",
+}
+
