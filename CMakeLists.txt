@@ -4,15 +4,14 @@
 # For details see the COPYRIGHT file distributed with LuaDist.
 # Please note that the package source code is licensed under its own license.
 
-PROJECT(ldoc NONE)
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-INCLUDE(dist.cmake)
+project ( ldoc NONE )
+cmake_minimum_required ( VERSION 2.6 )
+include ( cmake/dist.cmake )
+include ( lua )
 
 install_lua_executable ( ldoc ldoc.lua )
-INSTALL(DIRECTORY ldoc DESTINATION ${INSTALL_LMOD})
+install ( DIRECTORY ldoc DESTINATION ${INSTALL_LMOD} COMPONENT "Runtime" )
 
-INSTALL(FILES readme.md COPYRIGHT DESTINATION ${INSTALL_DATA})
-INSTALL(DIRECTORY docs/ DESTINATION ${INSTALL_DOC})
-INSTALL(DIRECTORY tests/ DESTINATION ${INSTALL_TEST})
-
-
+install_data ( readme.md COPYRIGHT )
+install_doc ( docs/ )
+install_test ( tests/ )
