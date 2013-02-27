@@ -1,0 +1,79 @@
+type = "x86_64"
+arch = "Ubuntu"
+author = "Steve Donovan"
+depends = {
+[[lua ~> 5.1]],
+[[penlight >= 0.9.7]],
+[[markdown >= 0.32]],
+}
+
+desc = "LDoc - A Lua Documentation Tool"
+version = "1.0"
+maintainer = "Peter Kapec"
+files = {
+Runtime = {
+[[bin/ldoc]],
+[[lib/lua/ldoc/parse.lua]],
+[[lib/lua/ldoc/builtin/table.luadoc]],
+[[lib/lua/ldoc/builtin/math.luadoc]],
+[[lib/lua/ldoc/builtin/global.luadoc]],
+[[lib/lua/ldoc/builtin/lpeg.luadoc]],
+[[lib/lua/ldoc/builtin/debug.luadoc]],
+[[lib/lua/ldoc/builtin/globals.lua]],
+[[lib/lua/ldoc/builtin/coroutine.luadoc]],
+[[lib/lua/ldoc/builtin/package.luadoc]],
+[[lib/lua/ldoc/builtin/os.luadoc]],
+[[lib/lua/ldoc/builtin/lfs.luadoc]],
+[[lib/lua/ldoc/builtin/io.luadoc]],
+[[lib/lua/ldoc/builtin/string.luadoc]],
+[[lib/lua/ldoc/prettify.lua]],
+[[lib/lua/ldoc/html.lua]],
+[[lib/lua/ldoc/tools.lua]],
+[[lib/lua/ldoc/lexer.lua]],
+[[lib/lua/ldoc/lang.lua]],
+[[lib/lua/ldoc/html/ldoc_css.lua]],
+[[lib/lua/ldoc/html/ldoc_one_css.lua]],
+[[lib/lua/ldoc/html/ldoc_ltp.lua]],
+[[lib/lua/ldoc/doc.lua]],
+[[lib/lua/ldoc/markup.lua]],
+}
+,
+Documentation = {
+[[share/ldoc/doc//doc.md]],
+}
+,
+Data = {
+[[share/ldoc/readme.md]],
+[[share/ldoc/COPYRIGHT]],
+}
+,
+Test = {
+[[share/ldoc/test//underscore.lua]],
+[[share/ldoc/test//luadoc/config.ld]],
+[[share/ldoc/test//md-test/mod2.lua]],
+[[share/ldoc/test//md-test/config.ld]],
+[[share/ldoc/test//example/mod1.lua]],
+[[share/ldoc/test//example/config.ld]],
+[[share/ldoc/test//example/style/ldoc.ltp]],
+[[share/ldoc/test//example/style/mod1.lua]],
+[[share/ldoc/test//example/style/simple.lua]],
+[[share/ldoc/test//example/style/ldoc.css]],
+[[share/ldoc/test//example/style/config.ld]],
+[[share/ldoc/test//example/modtest.lua]],
+[[share/ldoc/test//example/mylib.c]],
+[[share/ldoc/test//complex/lua/complex/display.lua]],
+[[share/ldoc/test//complex/lua/complex/util/parse.lua]],
+[[share/ldoc/test//complex/lua/complex/util/init.lua]],
+[[share/ldoc/test//complex/lua/complex/convert/basic.lua]],
+[[share/ldoc/test//complex/lua/complex/init.lua]],
+[[share/ldoc/test//simple/tables.lua]],
+[[share/ldoc/test//simple/simple.lua]],
+[[share/ldoc/test//simple/problem.lua]],
+[[share/ldoc/test//simple/simple_alias.lua]],
+}
+,
+}
+
+url = "https://github.com/stevedonovan/ldoc"
+name = "ldoc"
+license = "MIT"
