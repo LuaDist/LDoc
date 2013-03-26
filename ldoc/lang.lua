@@ -3,15 +3,15 @@
 -- This encapsulates the different strategies needed for parsing C and Lua
 -- source code.
 
-require 'pl'
-
+local class = require 'pl.class'
+local utils = require 'pl.utils'
 local tools = require 'ldoc.tools'
 local lexer = require 'ldoc.lexer'
-
+local quit = utils.quit
 local tnext = lexer.skipws
 
 
-class.Lang()
+local Lang = class()
 
 function Lang:trim_comment (s)
    return s:gsub(self.line_comment,'')
@@ -19,6 +19,9 @@ end
 
 function Lang:start_comment (v)
    local line = v:match (self.start_comment_)
+   if line and self.end_comment_ and v:match (self.end_comment_) then
+      return nil
+   end
    local block = v:match(self.block_comment)
    return line or block, block
 end
@@ -55,17 +58,22 @@ end
 function Lang:parse_extra (tags,tok)
 end
 
-function Lang:parse_usage (tags, tok)
-   return nil, "@usage deduction not implemented for this language"
+function Lang:is_module_modifier ()
+   return false
+end
+
+function Lang:parse_module_modifier (tags, tok)
+   return nil, "@usage or @exports deduction not implemented for this language"
 end
 
 
-class.Lua(Lang)
+local Lua = class(Lang)
 
 function Lua:_init()
    self.line_comment = '^%-%-+' -- used for stripping
    self.start_comment_ = '^%-%-%-+'     -- used for doc comment line start
    self.block_comment = '^%-%-%[=*%[%-+' -- used for block doc comments
+   self.end_comment_ = '[^%-]%-%-+\n$' ---- exclude --- this kind of comment ---
    self:finalize()
 end
 
@@ -105,11 +113,14 @@ end
 
 local function parse_lua_parameters (tags,tok)
    tags.formal_args = tools.get_parameters(tok)
-   tags.class = 'function'
+   tags:add('class','function')
 end
 
 local function parse_lua_function_header (tags,tok)
-   tags.name = tools.get_fun_name(tok)
+   if not tags.name then
+      tags:add('name',tools.get_fun_name(tok))
+   end
+   if not tags.name then return 'function has no name' end
    parse_lua_parameters(tags,tok)
 end
 
@@ -143,22 +154,39 @@ function Lua:item_follows(t,v,tok)
          tnext(tok) -- skip '('
          case = 2
          parser = function(tags,tok)
-            tags.name = name
+            tags:add('name',name)
             parse_lua_parameters(tags,tok)
          end
       elseif t == '{' then -- case [3]
          case = 3
          parser = function(tags,tok)
-            tags.class = 'table'
-            tags.name = name
+            tags:add('class','table')
+            tags:add('name',name)
             parse_lua_table (tags,tok)
          end
       else -- case [4]
          case = 4
          parser = function(tags)
-            tags.class = 'field'
-            tags.name = name
+            tags:add('class','field')
+            tags:add('name',name)
          end
+      end
+   elseif t == 'keyword' and v == 'return' then
+      t, v = tnext(tok)
+      if t == 'keyword' and v == 'function' then
+         -- return function(a, b, c)
+         tnext(tok) -- skip '('
+         case = 2
+         parser = parse_lua_parameters
+      elseif t ==  '{' then
+         -- return {...}
+         case = 5
+         parser = function(tags,tok)
+            tags:add('class','table')
+            parse_lua_table(tags,tok)
+         end
+      else
+         return nil
       end
    end
    return parser, is_local, case
@@ -175,20 +203,45 @@ function Lua:parse_extra (tags,tok,case)
    end
 end
 
-function Lua:parse_usage (tags, tok)
-   if tags.class ~= 'field' then return nil,"cannot deduce @usage" end
-   local t1= tnext(tok)
-   local t2 = tok()
-   if t1 ~= '[' or t1 ~= '[' then return nil, 'not a long string' end
-   t, v = tools.grab_block_comment('',tok,'%]%]')
-   return true, v
+-- For Lua, a --- @usage comment means that a long
+-- string containing the usage follows, which we
+-- use to update the module usage tag. Likewise, the @export
+-- tag alone in a doc comment refers to the following returned
+-- Lua table of functions
+
+
+function Lua:is_module_modifier (tags)
+   return tags.summary == '' and (tags.usage or tags.export)
+end
+
+--  Allow for private name convention.
+function Lua:is_private_var (name)
+   return name:match '^_' or name:match '_$'
+end
+
+function Lua:parse_module_modifier (tags, tok, F)
+   if tags.usage then
+      if tags.class ~= 'field' then return nil,"cannot deduce @usage" end
+      local t1= tnext(tok)
+      if t1 ~= '[' then return nil, t1..' '..': not a long string' end
+      local t, v = tools.grab_block_comment('',tok,'%]%]')
+      return true, v, 'usage'
+   elseif tags.export then
+      if tags.class ~= 'table' then return nil, "cannot deduce @export" end
+      for f in tags.formal_args:iter() do
+         if not self:is_private_var(f) then
+            F:export_item(f)
+         end
+      end
+      return true
+   end
 end
 
 
 -- note a difference here: we scan C/C++ code in full-text mode, not line by line.
 -- This is because we can't detect multiline comments in line mode
 
-class.CC(Lang)
+local CC = class(Lang)
 
 function CC:_init()
    self.line_comment = '^//+'
@@ -198,6 +251,7 @@ function CC:_init()
 end
 
 function CC.lexer(f)
+   local err
    f,err = utils.readfile(f)
    if not f then quit(err) end
    return lexer.cpp(f,{})
