@@ -1,7 +1,7 @@
 --- This file is part of LuaDist project
 
 name = "ldoc"
-version = "1.3.9"
+version = "1.4.2"
 
 desc = "LDoc - A Lua Documentation Tool"
 author = "Steve Donovan"
@@ -10,7 +10,7 @@ url = "https://github.com/stevedonovan/ldoc"
 license = "MIT"
 
 depends = {
-	"lua ~> 5.1",
+	"lua >= 5.1, < 5.3"
 	"penlight >= 0.9.7",
 	"markdown >= 0.32",
 }
